@@ -68,7 +68,8 @@ with open("emails.csv", "r") as f:
         filtered_tokens = [word for word in tokens if word not in stop_words and len(word) != 1 and word != "subject"]
 
         stemmed_tokens = [ps.stem(word) for word in filtered_tokens]
-        data.append(stemmed_tokens)
+        line = " ".join(stemmed_tokens)
+        data.append(line)
 dict_ = {
     "data": data[1:],
     "label": labels[1:]
