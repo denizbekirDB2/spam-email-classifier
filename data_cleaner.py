@@ -1,6 +1,19 @@
 import csv
 import re
 import string
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
+from nltk.stem import PorterStemmer
+from functools import reduce
+import pandas as pd
+
+nltk.download('stopwords')
+nltk.download('punkt')
+nltk.download('punkt_tab')
+ps = PorterStemmer()
+data = []
+labels = []
 
 with open("emails.csv", "r") as f:
     reader = csv.reader(f, delimiter="\t")
@@ -8,7 +21,7 @@ with open("emails.csv", "r") as f:
 
         # get label from line
         label = line[0][-1:]
-        print(label)
+        labels.append(label)
 
         line = line[0][:-1].lower()
 
@@ -42,7 +55,6 @@ with open("emails.csv", "r") as f:
         line = re.sub(r"[\$\€\£\¥]+ *([0-9]+ ?[0-9]?)+", "CURRENCY ", line)
 
         # sub numbers for NUMBER
-
         line = re.sub(r"([0-9]+ *[0-9]?)+", "NUMBER ", line)
 
         # strip punctuation
@@ -50,4 +62,17 @@ with open("emails.csv", "r") as f:
 
         line = line.translate(translator)
 
-        print(line)
+        # remove stop words ,single letters and "subject"
+        tokens = word_tokenize(line)
+        stop_words = set(stopwords.words('english'))
+        filtered_tokens = [word for word in tokens if word not in stop_words and len(word) != 1 and word != "subject"]
+
+        stemmed_tokens = [ps.stem(word) for word in filtered_tokens]
+        data.append(stemmed_tokens)
+dict_ = {
+    "data": data[1:],
+    "label": labels[1:]
+}
+
+df = pd.DataFrame(dict_)
+df.to_csv("emails_cleaned.csv", sep='\t')
