@@ -90,4 +90,4 @@ if __name__ == "__main__":
     }
 
     df = pd.DataFrame(dict_)
-    df.to_csv("emails_cleaned.csv", sep='\t')
+    df.to_csv("emails_cleaned.csv", sep='\t', index=False)
