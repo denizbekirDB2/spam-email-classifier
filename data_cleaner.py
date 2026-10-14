@@ -5,75 +5,89 @@ import nltk
 from nltk.corpus import stopwords
 from nltk.tokenize import word_tokenize
 from nltk.stem import PorterStemmer
-from functools import reduce
 import pandas as pd
 
-nltk.download('stopwords')
-nltk.download('punkt')
-nltk.download('punkt_tab')
-ps = PorterStemmer()
-data = []
-labels = []
+def initialize_nltk():
+    try: 
+        nltk.data.find("tokenizers/stopwords")
+        nltk.data.find("tokenizers/punkt")
+        nltk.data.find("tokenizers/punkt_tab")
+    except:
+        nltk.download('stopwords')
+        nltk.download('punkt')
+        nltk.download('punkt_tab')
 
-with open("emails.csv", "r") as f:
-    reader = csv.reader(f, delimiter="\t")
-    for i, line in enumerate(reader):
+def pipeline(e_mail):
+    ps = PorterStemmer()
 
-        # get label from line
-        label = line[0][-1:]
-        labels.append(label)
+    line = e_mail.lower()
+    
+    # sub urls for URL
+    LABEL = r"[a-z0-9_-]+"
+    DOT   = r"\s*\.\s*"
+    HOST  = rf"(?:{DOT})*{LABEL}(?:{DOT}+{LABEL})+"
+    SEG   = r"[^\s/]+"
 
-        line = line[0][:-1].lower()
+    pattern = re.compile(
+        rf"https? *: */ */\s*{HOST}"                     
+        rf"(?:\s*/\s*{SEG})*"                            
+        rf"(?:\s*/)?",                                  
+        re.I,
+    )
+    
+    line = re.sub(pattern, "URL ", line)
 
-        # sub urls for URL
-        LABEL = r"[a-z0-9_-]+"
-        DOT   = r"\s*\.\s*"
-        HOST  = rf"(?:{DOT})*{LABEL}(?:{DOT}+{LABEL})+"
-        SEG   = r"[^\s/]+"
+    # sub e-mails for EMail
 
-        pattern = re.compile(
-            rf"https? *: */ */\s*{HOST}"                     
-            rf"(?:\s*/\s*{SEG})*"                            
-            rf"(?:\s*/)?",                                  
-            re.I,
-        )
-        
-        line = re.sub(pattern, "URL ", line)
+    LOCAL = r"[a-z0-9_%+-]+(?:\s*\.\s*[a-z0-9_%+-]+)*"
+    LABEL = r"[a-z0-9-]+"
+    DOMAIN = rf"{LABEL}(?:\s*\.\s*{LABEL})+"             
 
-        # sub e-mails for EMail
+    pattern = re.compile(rf"\b{LOCAL}\s*@\s*{DOMAIN}", re.I)
 
-        LOCAL = r"[a-z0-9_%+-]+(?:\s*\.\s*[a-z0-9_%+-]+)*"
-        LABEL = r"[a-z0-9-]+"
-        DOMAIN = rf"{LABEL}(?:\s*\.\s*{LABEL})+"             
+    line = re.sub(pattern, "EMAIL ", line)
 
-        pattern = re.compile(rf"\b{LOCAL}\s*@\s*{DOMAIN}", re.I)
+    # sub currencys for CURRENCY
 
-        line = re.sub(pattern, "EMAIL ", line)
+    line = re.sub(r"[\$\€\£\¥]+ *([0-9]+ ?[0-9]?)+", "CURRENCY ", line)
 
-        # sub currencys for CURRENCY
+    # sub numbers for NUMBER
+    line = re.sub(r"([0-9]+ *[0-9]?)+", "NUMBER ", line)
 
-        line = re.sub(r"[\$\€\£\¥]+ *([0-9]+ ?[0-9]?)+", "CURRENCY ", line)
+    # strip punctuation
+    translator = str.maketrans('', '', string.punctuation)
 
-        # sub numbers for NUMBER
-        line = re.sub(r"([0-9]+ *[0-9]?)+", "NUMBER ", line)
+    line = line.translate(translator)
 
-        # strip punctuation
-        translator = str.maketrans('', '', string.punctuation)
+    # remove stop words ,single letters and "subject"
+    tokens = word_tokenize(line)
+    stop_words = set(stopwords.words('english'))
+    filtered_tokens = [word for word in tokens if word not in stop_words and len(word) != 1 and word != "subject"]
 
-        line = line.translate(translator)
+    stemmed_tokens = [ps.stem(word) for word in filtered_tokens]
+    line = " ".join(stemmed_tokens)
+    return line
 
-        # remove stop words ,single letters and "subject"
-        tokens = word_tokenize(line)
-        stop_words = set(stopwords.words('english'))
-        filtered_tokens = [word for word in tokens if word not in stop_words and len(word) != 1 and word != "subject"]
 
-        stemmed_tokens = [ps.stem(word) for word in filtered_tokens]
-        line = " ".join(stemmed_tokens)
-        data.append(line)
-dict_ = {
-    "data": data[1:],
-    "label": labels[1:]
-}
+if __name__ == "__main__":
+    data = []
+    labels = []
 
-df = pd.DataFrame(dict_)
-df.to_csv("emails_cleaned.csv", sep='\t')
+    with open("emails.csv", "r") as f:
+        reader = csv.reader(f, delimiter="\t")
+        for i, line in enumerate(reader):
+
+            # get label from line
+            label = line[0][-1:]
+            labels.append(label)
+
+            line = pipeline(line[0][:-1].lower())
+
+            data.append(line)
+    dict_ = {
+        "data": data[1:],
+        "label": labels[1:]
+    }
+
+    df = pd.DataFrame(dict_)
+    df.to_csv("emails_cleaned.csv", sep='\t')

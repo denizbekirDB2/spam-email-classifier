@@ -9,19 +9,7 @@ from sklearn.metrics import (
     recall_score,
 )
 import pandas as pd
-import string
-import nltk
-from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-from nltk.stem import PorterStemmer
-from functools import reduce
-import pandas as pd
-import re
-
-nltk.download('stopwords')
-nltk.download('punkt')
-nltk.download('punkt_tab')
-ps = PorterStemmer()
+import data_cleaner
 
 df = pd.read_csv('emails_cleaned.csv', sep='\t', index_col=0)
 
@@ -68,52 +56,7 @@ If you'd prefer to turn off automatic top ups, you can easily do so by visiting 
 If you have any questions or need further assistance, feel free to reach out!
 - Jason & Tilly"""
 
-line = new_input2
-
-# sub urls for URL
-LABEL = r"[a-z0-9_-]+"
-DOT   = r"\s*\.\s*"
-HOST  = rf"(?:{DOT})*{LABEL}(?:{DOT}+{LABEL})+"
-SEG   = r"[^\s/]+"
-
-pattern = re.compile(
-    rf"https? *: */ */\s*{HOST}"                     
-    rf"(?:\s*/\s*{SEG})*"                            
-    rf"(?:\s*/)?",                                  
-    re.I,
-)
-
-line = re.sub(pattern, "URL ", line)
-
-# sub e-mails for EMail
-
-LOCAL = r"[a-z0-9_%+-]+(?:\s*\.\s*[a-z0-9_%+-]+)*"
-LABEL = r"[a-z0-9-]+"
-DOMAIN = rf"{LABEL}(?:\s*\.\s*{LABEL})+"             
-
-pattern = re.compile(rf"\b{LOCAL}\s*@\s*{DOMAIN}", re.I)
-
-line = re.sub(pattern, "EMAIL ", line)
-
-# sub currencys for CURRENCY
-
-line = re.sub(r"[\$\€\£\¥]+ *([0-9]+ ?[0-9]?)+", "CURRENCY ", line)
-
-# sub numbers for NUMBER
-line = re.sub(r"([0-9]+ *[0-9]?)+", "NUMBER ", line)
-
-# strip punctuation
-translator = str.maketrans('', '', string.punctuation)
-
-line = line.translate(translator)
-
-# remove stop words ,single letters and "subject"
-tokens = word_tokenize(line)
-stop_words = set(stopwords.words('english'))
-filtered_tokens = [word for word in tokens if word not in stop_words and len(word) != 1 and word != "subject"]
-
-stemmed_tokens = [ps.stem(word) for word in filtered_tokens]
-line = " ".join(stemmed_tokens)
+line = data_cleaner.pipeline(new_input2)
 
 new_input_tfidf = vectorizer.transform([line])
 y_pred = mnb.fit(X_train_tfidf, y_train).predict(new_input_tfidf)
