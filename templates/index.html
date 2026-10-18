@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Spam Email Classifier</title>
+    </head>
+    <body>
+        
+            <form id="myForm">
+            <label for="email">E-mail</label>
+            <textarea id="email" name="email" cols="40" rows="5"></textarea>
+            <input type="submit" value="Submit">
+            </form>
+
+        <label id="result"></label>
+
+    </body>
+    <script>
+    document.getElementById("myForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        const payload = {
+        email: document.getElementById("email").value
+        };
+
+        const response = await fetch("/classification", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+        });
+
+        const json = await response.json();
+        document.getElementById("result").textContent = json.data;
+    });
+    </script>
+</html>

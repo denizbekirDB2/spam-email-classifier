@@ -4,10 +4,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import classification_report
 import pandas as pd
-import data_cleaner
+import pickle
 
 df = pd.read_csv('emails_cleaned.csv', sep='\t')
-
+ 
 X = df["data"]
 y = df['label']
 
@@ -24,3 +24,7 @@ mnb = MultinomialNB(alpha=0.1)
 y_pred = mnb.fit(X_train_tfidf, y_train).predict(X_test_tfidf)
 print(confusion_matrix(y_test, y_pred))
 print(classification_report(y_test, y_pred))
+
+if __name__ == "__main__":
+    pickle.dump(mnb, open("naivebayes_classifier.pkl","wb"))
+    pickle.dump(vectorizer, open("tfidf_vectorizer.pkl","wb"))
