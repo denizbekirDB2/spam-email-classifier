@@ -83,4 +83,4 @@ Both models perform well on the test set. Naive Bayes is slightly ahead with 99%
 
 ## License
 
-[MIT / etc.]
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
