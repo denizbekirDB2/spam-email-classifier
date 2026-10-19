@@ -73,7 +73,7 @@ Then open http://127.0.0.1:5000 in your browser.
 Both models perform well on the test set. Naive Bayes is slightly ahead with 99% accuracy, compared to 98% for Logistic Regression. Precision for spam is very high (0.99 and 1.00), so legitimate emails are almost never flagged as spam. Recall for spam is lower (0.90 and 0.95), which means some spam emails slip through as "not spam". Since the two models make different mistakes, returning "unsure" when they disagree flags borderline emails instead of silently misclassifying them.
 ## Limitations
 
-- Uses only the email text, not headers, links, or attachments
+- Uses only the email text, not headers or attachments
 - Not deployed; runs locally only
 
 ## Future improvements
