@@ -1,3 +1,6 @@
 sckitlearn_test.py
 test_csv.py
 test.py
+.venv
+__pycache__/
+*.py[cod]
