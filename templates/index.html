@@ -2,16 +2,29 @@
 <html>
     <head>
         <title>Spam Email Classifier</title>
+        <style>
+            #main {
+                width: 300px;
+                margin-left: auto;
+                margin-right: auto;
+            }
+            textarea {
+                resize: none;
+            }
+        </style>
     </head>
     <body>
-        
+        <div id="main">
+            <h1>Enter you mail below</h1>
             <form id="myForm">
-            <label for="email">E-mail</label>
-            <textarea id="email" name="email" cols="40" rows="5"></textarea>
-            <input type="submit" value="Submit">
+            <textarea id="email" name="email" cols="40" rows="8"></textarea>
+            <div>
+                <input type="submit" value="Submit">
+                <label>Result: </label>
+                <label id="result"></label>
+            </div>
             </form>
-
-        <label id="result"></label>
+        </div>
 
     </body>
     <script>
